@@ -6,10 +6,14 @@ import {
   CheckCircleIcon,
   FileTextIcon,
   HomeIcon,
+  KeyIcon,
   Loader2Icon,
   PencilIcon,
+  PlusIcon,
   SparklesIcon,
+  Trash2Icon,
   UploadIcon,
+  UserIcon,
   XCircleIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -24,6 +28,13 @@ import {
 } from "@/components/ui/card";
 import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { StepBuildings } from "@/components/wizard/step-buildings";
 import { StepUnits } from "@/components/wizard/step-units";
 import { api } from "@/trpc/react";
@@ -32,6 +43,13 @@ import type { DeclarationOfDivision } from "@/types/declaration-of-division";
 // Types for wizard state
 export type PropertyType = "WEG" | "MV";
 export type UnitType = "apartment" | "office" | "garden" | "parking";
+export type SpecialRightType =
+  | "terrace"
+  | "roofTerrace"
+  | "garden"
+  | "parkingSpace"
+  | "other";
+export type AppointmentRole = "propertyManager" | "accountant";
 
 export interface WizardBuilding {
   id?: number;
@@ -57,6 +75,20 @@ export interface WizardUnit {
   rooms: string;
 }
 
+export interface WizardSpecialRight {
+  tempId: string;
+  grantedToUnitNumber: string;
+  rightType: SpecialRightType;
+  description: string;
+}
+
+export interface WizardAppointment {
+  tempId: string;
+  role: AppointmentRole;
+  organizationName: string;
+  durationYears: number | null;
+}
+
 export interface WizardState {
   propertyType: PropertyType | null;
   propertyName: string;
@@ -65,6 +97,8 @@ export interface WizardState {
   declarationFileUrl: string;
   buildings: WizardBuilding[];
   units: WizardUnit[];
+  specialRights: WizardSpecialRight[];
+  appointments: WizardAppointment[];
   // Rich extracted document for storage
   extractedDocument: DeclarationOfDivision | null;
   // Additional property fields
@@ -86,6 +120,8 @@ const initialState: WizardState = {
   declarationFileUrl: "",
   buildings: [],
   units: [],
+  specialRights: [],
+  appointments: [],
   extractedDocument: null,
   totalLandSize: "",
   landRegistry: "",
@@ -215,6 +251,26 @@ export default function NewPropertyPage() {
         });
       });
 
+      // Transform special rights from declaration
+      const specialRights: WizardSpecialRight[] = (
+        declaration.specialUseRights || []
+      ).map((right) => ({
+        tempId: crypto.randomUUID(),
+        grantedToUnitNumber: right.grantedToUnitNumber,
+        rightType: right.rightType,
+        description: right.description,
+      }));
+
+      // Transform appointments from declaration
+      const appointments: WizardAppointment[] = (
+        declaration.appointments || []
+      ).map((apt) => ({
+        tempId: crypto.randomUUID(),
+        role: apt.role,
+        organizationName: apt.organizationName,
+        durationYears: apt.term?.durationYears || null,
+      }));
+
       setWizardState({
         propertyType: flattened.propertyType,
         propertyName: flattened.propertyName,
@@ -223,6 +279,8 @@ export default function NewPropertyPage() {
         declarationFileUrl: wizardState.declarationFileUrl,
         buildings,
         units,
+        specialRights,
+        appointments,
         // Store the rich document
         extractedDocument: declaration,
         // Additional property fields
@@ -263,6 +321,42 @@ export default function NewPropertyPage() {
     setIsSubmitting(true);
 
     try {
+      // Build the extracted document with updated special rights and appointments
+      const finalExtractedDocument = wizardState.extractedDocument
+        ? {
+            ...wizardState.extractedDocument,
+            specialUseRights: wizardState.specialRights.map((r) => ({
+              grantedToUnitNumber: r.grantedToUnitNumber,
+              rightType: r.rightType,
+              description: r.description,
+            })),
+            appointments: wizardState.appointments.map((a) => ({
+              role: a.role,
+              organizationName: a.organizationName,
+              term: a.durationYears
+                ? { durationYears: a.durationYears, startsFrom: "" }
+                : undefined,
+            })),
+          }
+        : wizardState.specialRights.length > 0 ||
+          wizardState.appointments.length > 0
+        ? {
+            id: crypto.randomUUID(),
+            specialUseRights: wizardState.specialRights.map((r) => ({
+              grantedToUnitNumber: r.grantedToUnitNumber,
+              rightType: r.rightType,
+              description: r.description,
+            })),
+            appointments: wizardState.appointments.map((a) => ({
+              role: a.role,
+              organizationName: a.organizationName,
+              term: a.durationYears
+                ? { durationYears: a.durationYears, startsFrom: "" }
+                : undefined,
+            })),
+          }
+        : undefined;
+
       // 1. Create the property with all extracted data
       const property = await createProperty.mutateAsync({
         name: wizardState.propertyName,
@@ -275,7 +369,7 @@ export default function NewPropertyPage() {
         heatingType: wizardState.heatingType || undefined,
         managerName: wizardState.managerName || undefined,
         accountantName: wizardState.accountantName || undefined,
-        extractedDocument: wizardState.extractedDocument || undefined,
+        extractedDocument: finalExtractedDocument,
         declarationFileUrl: wizardState.declarationFileUrl || undefined,
       });
 
@@ -679,64 +773,234 @@ export default function NewPropertyPage() {
               </div>
             </div>
 
-            {/* Special Use Rights (from AI extraction) */}
-            {wizardState.extractedDocument?.specialUseRights &&
-              wizardState.extractedDocument.specialUseRights.length > 0 && (
-                <div className="space-y-4">
-                  <h3 className="font-medium text-sm">
-                    Special Use Rights (Sondernutzungsrechte)
-                  </h3>
-                  <div className="space-y-3 rounded-lg border p-4">
-                    {wizardState.extractedDocument.specialUseRights.map(
-                      (right, index) => (
-                        <div
-                          className="flex items-start gap-3 text-sm"
-                          key={index}
-                        >
-                          <span className="rounded bg-primary/10 px-2 py-1 font-medium text-xs">
-                            Unit {right.grantedToUnitNumber}
-                          </span>
-                          <span className="text-muted-foreground capitalize">
-                            {right.rightType.replace(/([A-Z])/g, " $1").trim()}:
-                          </span>
-                          <span className="flex-1">{right.description}</span>
-                        </div>
-                      )
-                    )}
+            {/* Special Use Rights */}
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <KeyIcon className="size-4 text-primary" />
+                    <CardTitle className="text-base">
+                      Special Use Rights
+                    </CardTitle>
                   </div>
+                  <Button
+                    onClick={() => {
+                      const newRight: WizardSpecialRight = {
+                        tempId: crypto.randomUUID(),
+                        grantedToUnitNumber: "",
+                        rightType: "terrace",
+                        description: "",
+                      };
+                      updateState({
+                        specialRights: [...wizardState.specialRights, newRight],
+                      });
+                    }}
+                    size="sm"
+                    type="button"
+                    variant="outline"
+                  >
+                    <PlusIcon className="size-4" />
+                    Add
+                  </Button>
                 </div>
-              )}
+                <CardDescription>
+                  Sondernutzungsrechte - exclusive usage rights for units
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {wizardState.specialRights.length > 0 ? (
+                  wizardState.specialRights.map((right, index) => (
+                    <div
+                      className="group flex items-center gap-2 rounded-md border bg-muted/30 p-2"
+                      key={right.tempId}
+                    >
+                      <Input
+                        className="h-8 w-20 text-center"
+                        onChange={(e) => {
+                          const updated = [...wizardState.specialRights];
+                          updated[index] = {
+                            ...right,
+                            grantedToUnitNumber: e.target.value,
+                          };
+                          updateState({ specialRights: updated });
+                        }}
+                        placeholder="Unit"
+                        value={right.grantedToUnitNumber}
+                      />
+                      <Select
+                        onValueChange={(value: SpecialRightType) => {
+                          const updated = [...wizardState.specialRights];
+                          updated[index] = { ...right, rightType: value };
+                          updateState({ specialRights: updated });
+                        }}
+                        value={right.rightType}
+                      >
+                        <SelectTrigger className="h-8 w-[130px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="terrace">Terrace</SelectItem>
+                          <SelectItem value="roofTerrace">
+                            Roof Terrace
+                          </SelectItem>
+                          <SelectItem value="garden">Garden</SelectItem>
+                          <SelectItem value="parkingSpace">Parking</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        className="h-8 flex-1"
+                        onChange={(e) => {
+                          const updated = [...wizardState.specialRights];
+                          updated[index] = {
+                            ...right,
+                            description: e.target.value,
+                          };
+                          updateState({ specialRights: updated });
+                        }}
+                        placeholder="Description..."
+                        value={right.description}
+                      />
+                      <Button
+                        className="size-8 opacity-0 transition-opacity group-hover:opacity-100"
+                        onClick={() => {
+                          updateState({
+                            specialRights: wizardState.specialRights.filter(
+                              (r) => r.tempId !== right.tempId
+                            ),
+                          });
+                        }}
+                        size="icon"
+                        type="button"
+                        variant="ghost"
+                      >
+                        <Trash2Icon className="size-4 text-muted-foreground hover:text-destructive" />
+                      </Button>
+                    </div>
+                  ))
+                ) : (
+                  <p className="py-4 text-center text-muted-foreground text-sm">
+                    No special use rights. Click "Add" to define one.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
 
-            {/* Appointments (from AI extraction) */}
-            {wizardState.extractedDocument?.appointments &&
-              wizardState.extractedDocument.appointments.length > 0 && (
-                <div className="space-y-4">
-                  <h3 className="font-medium text-sm">
-                    Appointments (Erstbestellung)
-                  </h3>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    {wizardState.extractedDocument.appointments.map(
-                      (appointment, index) => (
-                        <div className="rounded-lg border p-4" key={index}>
-                          <p className="text-muted-foreground text-xs capitalize">
-                            {appointment.role === "propertyManager"
-                              ? "Property Manager"
-                              : "Accountant"}
-                          </p>
-                          <p className="font-medium">
-                            {appointment.organizationName}
-                          </p>
-                          {appointment.term && (
-                            <p className="text-muted-foreground text-sm">
-                              {appointment.term.durationYears} year term
-                            </p>
-                          )}
-                        </div>
-                      )
-                    )}
+            {/* Appointments */}
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <UserIcon className="size-4 text-primary" />
+                    <CardTitle className="text-base">Appointments</CardTitle>
                   </div>
+                  <Button
+                    onClick={() => {
+                      const newAppointment: WizardAppointment = {
+                        tempId: crypto.randomUUID(),
+                        role: "propertyManager",
+                        organizationName: "",
+                        durationYears: 3,
+                      };
+                      updateState({
+                        appointments: [
+                          ...wizardState.appointments,
+                          newAppointment,
+                        ],
+                      });
+                    }}
+                    size="sm"
+                    type="button"
+                    variant="outline"
+                  >
+                    <PlusIcon className="size-4" />
+                    Add
+                  </Button>
                 </div>
-              )}
+                <CardDescription>
+                  Erstbestellung - property manager and accountant
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {wizardState.appointments.length > 0 ? (
+                  wizardState.appointments.map((appointment, index) => (
+                    <div
+                      className="group flex items-center gap-2 rounded-md border bg-muted/30 p-2"
+                      key={appointment.tempId}
+                    >
+                      <Select
+                        onValueChange={(value: AppointmentRole) => {
+                          const updated = [...wizardState.appointments];
+                          updated[index] = { ...appointment, role: value };
+                          updateState({ appointments: updated });
+                        }}
+                        value={appointment.role}
+                      >
+                        <SelectTrigger className="h-8 w-[150px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="propertyManager">
+                            Property Manager
+                          </SelectItem>
+                          <SelectItem value="accountant">Accountant</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        className="h-8 flex-1"
+                        onChange={(e) => {
+                          const updated = [...wizardState.appointments];
+                          updated[index] = {
+                            ...appointment,
+                            organizationName: e.target.value,
+                          };
+                          updateState({ appointments: updated });
+                        }}
+                        placeholder="Organization name..."
+                        value={appointment.organizationName}
+                      />
+                      <Input
+                        className="h-8 w-20 text-center"
+                        onChange={(e) => {
+                          const updated = [...wizardState.appointments];
+                          const value = e.target.value
+                            ? parseInt(e.target.value, 10)
+                            : null;
+                          updated[index] = {
+                            ...appointment,
+                            durationYears: Number.isNaN(value) ? null : value,
+                          };
+                          updateState({ appointments: updated });
+                        }}
+                        placeholder="Years"
+                        type="number"
+                        value={appointment.durationYears ?? ""}
+                      />
+                      <span className="text-muted-foreground text-xs">yrs</span>
+                      <Button
+                        className="size-8 opacity-0 transition-opacity group-hover:opacity-100"
+                        onClick={() => {
+                          updateState({
+                            appointments: wizardState.appointments.filter(
+                              (a) => a.tempId !== appointment.tempId
+                            ),
+                          });
+                        }}
+                        size="icon"
+                        type="button"
+                        variant="ghost"
+                      >
+                        <Trash2Icon className="size-4 text-muted-foreground hover:text-destructive" />
+                      </Button>
+                    </div>
+                  ))
+                ) : (
+                  <p className="py-4 text-center text-muted-foreground text-sm">
+                    No appointments. Click "Add" to define one.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
           </div>
 
           {/* Buildings */}
