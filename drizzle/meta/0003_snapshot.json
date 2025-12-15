@@ -1,0 +1,904 @@
+{
+	"id": "8eea4d60-043a-4260-9833-f49ba16e3fb4",
+	"prevId": "93b40559-aae8-4599-bce8-84ff715075a5",
+	"version": "7",
+	"dialect": "postgresql",
+	"tables": {
+		"public.account": {
+			"name": "account",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"account_id": {
+					"name": "account_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"provider_id": {
+					"name": "provider_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"access_token": {
+					"name": "access_token",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"refresh_token": {
+					"name": "refresh_token",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"id_token": {
+					"name": "id_token",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"access_token_expires_at": {
+					"name": "access_token_expires_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"refresh_token_expires_at": {
+					"name": "refresh_token_expires_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"scope": {
+					"name": "scope",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"password": {
+					"name": "password",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"account_user_id_user_id_fk": {
+					"name": "account_user_id_user_id_fk",
+					"tableFrom": "account",
+					"tableTo": "user",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.pg-drizzle_building": {
+			"name": "pg-drizzle_building",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "integer",
+					"primaryKey": true,
+					"notNull": true,
+					"identity": {
+						"type": "byDefault",
+						"name": "pg-drizzle_building_id_seq",
+						"schema": "public",
+						"increment": "1",
+						"startWith": "1",
+						"minValue": "1",
+						"maxValue": "2147483647",
+						"cache": "1",
+						"cycle": false
+					}
+				},
+				"propertyId": {
+					"name": "propertyId",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"code": {
+					"name": "code",
+					"type": "varchar(10)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"name": {
+					"name": "name",
+					"type": "varchar(256)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"year_built": {
+					"name": "year_built",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"floors": {
+					"name": "floors",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"has_elevator": {
+					"name": "has_elevator",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"building_type": {
+					"name": "building_type",
+					"type": "building_type",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"street": {
+					"name": "street",
+					"type": "varchar(256)",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"houseNumber": {
+					"name": "houseNumber",
+					"type": "varchar(50)",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"postalCode": {
+					"name": "postalCode",
+					"type": "varchar(20)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"city": {
+					"name": "city",
+					"type": "varchar(100)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"createdAt": {
+					"name": "createdAt",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {
+				"building_property_idx": {
+					"name": "building_property_idx",
+					"columns": [
+						{
+							"expression": "propertyId",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"pg-drizzle_building_propertyId_pg-drizzle_property_id_fk": {
+					"name": "pg-drizzle_building_propertyId_pg-drizzle_property_id_fk",
+					"tableFrom": "pg-drizzle_building",
+					"tableTo": "pg-drizzle_property",
+					"columnsFrom": ["propertyId"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.pg-drizzle_post": {
+			"name": "pg-drizzle_post",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "integer",
+					"primaryKey": true,
+					"notNull": true,
+					"identity": {
+						"type": "byDefault",
+						"name": "pg-drizzle_post_id_seq",
+						"schema": "public",
+						"increment": "1",
+						"startWith": "1",
+						"minValue": "1",
+						"maxValue": "2147483647",
+						"cache": "1",
+						"cycle": false
+					}
+				},
+				"name": {
+					"name": "name",
+					"type": "varchar(256)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"createdById": {
+					"name": "createdById",
+					"type": "varchar(255)",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"createdAt": {
+					"name": "createdAt",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"updatedAt": {
+					"name": "updatedAt",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {
+				"created_by_idx": {
+					"name": "created_by_idx",
+					"columns": [
+						{
+							"expression": "createdById",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"name_idx": {
+					"name": "name_idx",
+					"columns": [
+						{
+							"expression": "name",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"pg-drizzle_post_createdById_user_id_fk": {
+					"name": "pg-drizzle_post_createdById_user_id_fk",
+					"tableFrom": "pg-drizzle_post",
+					"tableTo": "user",
+					"columnsFrom": ["createdById"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.pg-drizzle_property": {
+			"name": "pg-drizzle_property",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "integer",
+					"primaryKey": true,
+					"notNull": true,
+					"identity": {
+						"type": "byDefault",
+						"name": "pg-drizzle_property_id_seq",
+						"schema": "public",
+						"increment": "1",
+						"startWith": "1",
+						"minValue": "1",
+						"maxValue": "2147483647",
+						"cache": "1",
+						"cycle": false
+					}
+				},
+				"propertyNumber": {
+					"name": "propertyNumber",
+					"type": "varchar(50)",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"name": {
+					"name": "name",
+					"type": "varchar(256)",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"type": {
+					"name": "type",
+					"type": "property_type",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"totalLandSize": {
+					"name": "totalLandSize",
+					"type": "varchar(50)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"landRegistry": {
+					"name": "landRegistry",
+					"type": "varchar(256)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"plotInfo": {
+					"name": "plotInfo",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"owner": {
+					"name": "owner",
+					"type": "varchar(256)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"energyStandard": {
+					"name": "energyStandard",
+					"type": "varchar(50)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"heatingType": {
+					"name": "heatingType",
+					"type": "varchar(100)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"managerName": {
+					"name": "managerName",
+					"type": "varchar(256)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"accountantName": {
+					"name": "accountantName",
+					"type": "varchar(256)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"managerId": {
+					"name": "managerId",
+					"type": "varchar(255)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"accountantId": {
+					"name": "accountantId",
+					"type": "varchar(255)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"extracted_document": {
+					"name": "extracted_document",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"declarationFileUrl": {
+					"name": "declarationFileUrl",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"createdById": {
+					"name": "createdById",
+					"type": "varchar(255)",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"createdAt": {
+					"name": "createdAt",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"updatedAt": {
+					"name": "updatedAt",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {
+				"property_number_idx": {
+					"name": "property_number_idx",
+					"columns": [
+						{
+							"expression": "propertyNumber",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"property_type_idx": {
+					"name": "property_type_idx",
+					"columns": [
+						{
+							"expression": "type",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"property_created_by_idx": {
+					"name": "property_created_by_idx",
+					"columns": [
+						{
+							"expression": "createdById",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"pg-drizzle_property_managerId_user_id_fk": {
+					"name": "pg-drizzle_property_managerId_user_id_fk",
+					"tableFrom": "pg-drizzle_property",
+					"tableTo": "user",
+					"columnsFrom": ["managerId"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"pg-drizzle_property_accountantId_user_id_fk": {
+					"name": "pg-drizzle_property_accountantId_user_id_fk",
+					"tableFrom": "pg-drizzle_property",
+					"tableTo": "user",
+					"columnsFrom": ["accountantId"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"pg-drizzle_property_createdById_user_id_fk": {
+					"name": "pg-drizzle_property_createdById_user_id_fk",
+					"tableFrom": "pg-drizzle_property",
+					"tableTo": "user",
+					"columnsFrom": ["createdById"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"pg-drizzle_property_propertyNumber_unique": {
+					"name": "pg-drizzle_property_propertyNumber_unique",
+					"nullsNotDistinct": false,
+					"columns": ["propertyNumber"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.session": {
+			"name": "session",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"expires_at": {
+					"name": "expires_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"token": {
+					"name": "token",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"ip_address": {
+					"name": "ip_address",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"user_agent": {
+					"name": "user_agent",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"session_user_id_user_id_fk": {
+					"name": "session_user_id_user_id_fk",
+					"tableFrom": "session",
+					"tableTo": "user",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"session_token_unique": {
+					"name": "session_token_unique",
+					"nullsNotDistinct": false,
+					"columns": ["token"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.pg-drizzle_unit": {
+			"name": "pg-drizzle_unit",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "integer",
+					"primaryKey": true,
+					"notNull": true,
+					"identity": {
+						"type": "byDefault",
+						"name": "pg-drizzle_unit_id_seq",
+						"schema": "public",
+						"increment": "1",
+						"startWith": "1",
+						"minValue": "1",
+						"maxValue": "2147483647",
+						"cache": "1",
+						"cycle": false
+					}
+				},
+				"buildingId": {
+					"name": "buildingId",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"unitNumber": {
+					"name": "unitNumber",
+					"type": "varchar(50)",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"type": {
+					"name": "type",
+					"type": "unit_type",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"floor": {
+					"name": "floor",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"entrance": {
+					"name": "entrance",
+					"type": "varchar(50)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"size": {
+					"name": "size",
+					"type": "numeric(10, 2)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"co_ownership_share": {
+					"name": "co_ownership_share",
+					"type": "numeric(10, 6)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"constructionYear": {
+					"name": "constructionYear",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"rooms": {
+					"name": "rooms",
+					"type": "numeric(4, 1)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"description": {
+					"name": "description",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"createdAt": {
+					"name": "createdAt",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {
+				"unit_building_idx": {
+					"name": "unit_building_idx",
+					"columns": [
+						{
+							"expression": "buildingId",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"unit_type_idx": {
+					"name": "unit_type_idx",
+					"columns": [
+						{
+							"expression": "type",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"pg-drizzle_unit_buildingId_pg-drizzle_building_id_fk": {
+					"name": "pg-drizzle_unit_buildingId_pg-drizzle_building_id_fk",
+					"tableFrom": "pg-drizzle_unit",
+					"tableTo": "pg-drizzle_building",
+					"columnsFrom": ["buildingId"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.user": {
+			"name": "user",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"name": {
+					"name": "name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"email": {
+					"name": "email",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"email_verified": {
+					"name": "email_verified",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"image": {
+					"name": "image",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"user_email_unique": {
+					"name": "user_email_unique",
+					"nullsNotDistinct": false,
+					"columns": ["email"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.verification": {
+			"name": "verification",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"identifier": {
+					"name": "identifier",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"value": {
+					"name": "value",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"expires_at": {
+					"name": "expires_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		}
+	},
+	"enums": {
+		"public.building_type": {
+			"name": "building_type",
+			"schema": "public",
+			"values": ["residential", "commercial", "mixed"]
+		},
+		"public.property_type": {
+			"name": "property_type",
+			"schema": "public",
+			"values": ["WEG", "MV"]
+		},
+		"public.unit_type": {
+			"name": "unit_type",
+			"schema": "public",
+			"values": ["apartment", "office", "garden", "parking"]
+		}
+	},
+	"schemas": {},
+	"sequences": {},
+	"roles": {},
+	"policies": {},
+	"views": {},
+	"_meta": {
+		"columns": {},
+		"schemas": {},
+		"tables": {}
+	}
+}
