@@ -1,5 +1,6 @@
 import { aiRouter } from "@/server/api/routers/ai";
 import { buildingRouter } from "@/server/api/routers/building";
+import { dashboardRouter } from "@/server/api/routers/dashboard";
 import { postRouter } from "@/server/api/routers/post";
 import { propertyRouter } from "@/server/api/routers/property";
 import { unitRouter } from "@/server/api/routers/unit";
@@ -16,6 +17,7 @@ export const appRouter = createTRPCRouter({
 	building: buildingRouter,
 	unit: unitRouter,
 	ai: aiRouter,
+	dashboard: dashboardRouter,
 });
 
 // export type definition of API
